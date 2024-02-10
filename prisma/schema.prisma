@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int        @id @default(autoincrement())
+  full_name   String     @db.VarChar(250)
+  phone       String     @db.Char(13)
+  address     String?    @db.Text
+  email       String     @unique @db.VarChar(250)
+  password    String?    @db.VarChar(250)
+  verified    Boolean    @default(false)
+  profile_img String     @default("avatar.png") @db.Text
+  is_active   Boolean    @default(true)
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @default(now())
+  Favorite    Favorite[]
+  cart        Cart?
+  Order       Order[]
+
+  @@map("users")
+}
+
+model Product {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(150)
+  price       Decimal
+  short_desc  String     @db.VarChar(150)
+  quality     Int
+  description String     @db.Text
+  img_url     String     @db.Text
+  is_active   Boolean    @default(true)
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @default(now())
+  Color       Color[]
+  Favorite    Favorite[]
+
+  Order    Order?     @relation(fields: [orderId], references: [id])
+  orderId  Int?
+  CartItem CartItem[]
+
+  @@map("products")
+}
+
+model Color {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(150)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  product_id Int
+  product    Product  @relation(references: [id], fields: [product_id])
+
+  @@map("colors")
+}
+
+model Favorite {
+  id         Int     @id @default(autoincrement())
+  product_id Int
+  user_id    Int
+  product    Product @relation(references: [id], fields: [product_id])
+  user       User    @relation(references: [id], fields: [user_id])
+
+  @@map("favorites")
+}
+
+model Cart {
+  id      Int        @id @default(autoincrement())
+  user_id Int        @unique
+  item    CartItem[]
+  User    User?      @relation(fields: [user_id], references: [id])
+
+  @@map("UserCarts")
+}
+
+model CartItem {
+  id         Int     @id @default(autoincrement())
+  product_id Int
+  product    Product @relation(references: [id], fields: [product_id])
+  qty        Int
+  Cart       Cart?   @relation(fields: [cartId], references: [id])
+  cartId     Int?
+}
+
+model Order {
+  id       Int       @id @default(autoincrement())
+  order_id String    @unique
+  total    Decimal
+  Product  Product[]
+  User     User      @relation(fields: [userId], references: [id])
+  userId   Int
+
+  @@map("orders")
+}
