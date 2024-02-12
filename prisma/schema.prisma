@@ -13,13 +13,14 @@ datasource db {
 model User {
   id          Int        @id @default(autoincrement())
   full_name   String     @db.VarChar(250)
-  phone       String     @db.Char(13)
+  phone       String?    @db.Char(13)
   address     String?    @db.Text
   email       String     @unique @db.VarChar(250)
   password    String?    @db.VarChar(250)
   verified    Boolean    @default(false)
   profile_img String     @default("avatar.png") @db.Text
   is_active   Boolean    @default(true)
+  token       String?    @db.Text
   created_at  DateTime   @default(now())
   updated_at  DateTime   @default(now())
   Favorite    Favorite[]
@@ -91,12 +92,13 @@ model CartItem {
 }
 
 model Order {
-  id       Int       @id @default(autoincrement())
-  order_id String    @unique
-  total    Decimal
-  Product  Product[]
-  User     User      @relation(fields: [userId], references: [id])
-  userId   Int
+  id          Int       @id @default(autoincrement())
+  order_id    String    @unique
+  total       Decimal
+  destination String    @db.Text
+  Product     Product[]
+  User        User      @relation(fields: [userId], references: [id])
+  userId      Int
 
   @@map("orders")
 }

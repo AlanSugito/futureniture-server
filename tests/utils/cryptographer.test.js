@@ -1,0 +1,32 @@
+import {Cryptographer} from '../../src/utils';
+import {describe, expect, it} from '@jest/globals';
+
+describe('Cryptographer', () => {
+  let hashed;
+  it('should hash a string', async () => {
+    const result = await Cryptographer.hash('something');
+    hashed = result;
+    console.log(hashed);
+  });
+
+  it('should compare a hashed string', async () => {
+    const result = await Cryptographer.compare('something', hashed);
+    expect(result).toBeTruthy();
+  });
+
+  let token;
+  const SECRET = 'himitsu';
+  it('should generate token', () => {
+    token = Cryptographer.generateToken('token', SECRET);
+    console.log(token);
+  });
+
+  it('should verify the token', async () => {
+    const result = await Cryptographer.verifyToken(token, SECRET);
+    expect(result).toBe('token');
+  });
+
+  it.failing('should throw error', async () => {
+    await Cryptographer.verifyToken(token, 'wrong');
+  });
+});
