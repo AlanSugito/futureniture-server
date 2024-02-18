@@ -17,16 +17,22 @@ describe('Cryptographer', () => {
   let token;
   const SECRET = 'himitsu';
   it('should generate token', () => {
-    token = Cryptographer.generateToken('token', SECRET);
+    token = Cryptographer.generateToken({token: 'token'}, SECRET, '10d');
     console.log(token);
   });
 
   it('should verify the token', async () => {
     const result = await Cryptographer.verifyToken(token, SECRET);
-    expect(result).toBe('token');
+    expect(result).toHaveProperty('token', 'token');
   });
 
   it.failing('should throw error', async () => {
     await Cryptographer.verifyToken(token, 'wrong');
+  });
+
+  it.failing('Should throw jwt expired', async () => {
+    token = Cryptographer.generateToken({token: 'something'}, SECRET, '-1s');
+
+    await Cryptographer.verifyToken(token, SECRET);
   });
 });

@@ -12,8 +12,8 @@ class Cryptographer {
     return await bcrypt.compare(data, encrypted);
   }
 
-  static generateToken(data, secret) {
-    return jwt.sign(data, secret);
+  static generateToken(data, secret, ttl = '900s') {
+    return jwt.sign(data, secret, {expiresIn: ttl});
   }
 
   static async verifyToken(token, secret) {

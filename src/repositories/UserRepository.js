@@ -79,12 +79,12 @@ class UserRepository {
     }
   }
 
-  async updateProfile(id, data) {
+  async updateProfile(email, data) {
     try {
       if (!this.isUserExist(email)) throw new NotFoundError('User not found');
 
       await prismaClient.user.update({
-        where: {id},
+        where: {email},
         data: {...data, updated_at: new Date()},
       });
     } catch (error) {

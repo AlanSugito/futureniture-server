@@ -1,7 +1,5 @@
 import {oauthUrl, logger} from '../apps/index.js';
 import {AuthService} from '../services/index.js';
-import {Cryptographer, Formatter} from '../utils/index.js';
-import configs from '../configs/index.js';
 
 const service = new AuthService();
 
@@ -13,19 +11,29 @@ class AuthController {
   async oauth2Login(req, res, next) {
     try {
       const {code} = req.query;
-      const userId = await service.oauth2Login(code);
-
-      const rfToken = Cryptographer.generateToken({userId}, configs.RT_SECRET);
-      const accessToken = Cryptographer.generateToken(
-        {userId},
-        configs.AT_SECRET
-      );
+      const {rfToken, accessToken} = await service.oauth2Login(code);
 
       res.cookie('rft', rfToken, {httpOnly: true});
       const message = 'Successfully login';
+      res.redirect(301, `http://localhost:5173/oauth?acc_token=${accessToken}`);
+      logger.info(Formatter.formatRequestLog(req, res, message));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async login(req, res, next) {
+    try {
+      const {email, password} = req.body.data;
+      const {rfToken, accessToken} = await service.login(email, password);
+
+      const message = 'Successfully login';
+      res.cookie('rft', rfToken, {httpOnly: true});
       res.status(200).json({
         message,
-        data: {accessToken},
+        data: {
+          accessToken,
+        },
       });
       logger.info(Formatter.formatRequestLog(req, res, message));
     } catch (error) {

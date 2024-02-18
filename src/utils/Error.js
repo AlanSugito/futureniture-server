@@ -1,14 +1,11 @@
-import {logger} from '../apps/index.js';
-
 class APIError extends Error {
   constructor(status, message) {
     super(message);
     this.status = status;
-    logger.error(`${this.status} ${this.message}`);
   }
 
   static parseError(error) {
-    if (!(error instanceof APIError)) throw new ServerError();
+    if (!(error instanceof APIError)) throw new ServerError(error.message);
 
     if (error.status === 400) throw new ValidationError(error.message);
 
@@ -31,8 +28,8 @@ class NotFoundError extends APIError {
 }
 
 class ServerError extends APIError {
-  constructor() {
-    super(500, 'Internal Server Error');
+  constructor(message = 'Internal Server Error') {
+    super(500, message);
   }
 }
 

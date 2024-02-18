@@ -5,6 +5,7 @@ import {AuthController} from '../controllers/index.js';
 const router = Router();
 const authController = new AuthController();
 
+router.post('/login', authController.login);
 router.get('/login/google', authController.googleOAuth);
 router.get('/login/google/callback', authController.oauth2Login);
 
