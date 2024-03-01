@@ -20,7 +20,7 @@ model User {
   verified    Boolean    @default(false)
   profile_img String     @default("avatar.png") @db.Text
   is_active   Boolean    @default(true)
-  token       String?    @db.Text
+  token       String?    @unique @db.Text
   created_at  DateTime   @default(now())
   updated_at  DateTime   @default(now())
   Favorite    Favorite[]

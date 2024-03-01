@@ -1,6 +1,15 @@
 import Joi from 'joi';
 
-const credentialSchema = Joi.object({
+const signUpSchema = Joi.object({
+  full_name: Joi.string().required().max(250).messages({
+    'string.empty': 'Full name is a required field!',
+  }),
+  phone: Joi.string()
+    .required()
+    .alphanum()
+    .max(13)
+    .messages({'string.empty': 'Phone number is a required field!'}),
+  address: Joi.string().optional().empty(''),
   email: Joi.string().required().email().max(250).messages({
     'string.email': 'Email is not a valid email format!',
     'string.empty': 'Email is a required field!',
@@ -11,4 +20,4 @@ const credentialSchema = Joi.object({
   }),
 });
 
-export default credentialSchema;
+export default signUpSchema;

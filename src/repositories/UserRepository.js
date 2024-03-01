@@ -16,7 +16,7 @@ class UserRepository {
   async save(data) {
     try {
       if (await this.isUserExist(data.email))
-        throw new APIError(400, 'This email is alreday used!');
+        throw new APIError(400, 'This email is already used!');
 
       let hashedPassword;
 
@@ -51,10 +51,10 @@ class UserRepository {
     }
   }
 
-  async getCredentials(email) {
+  async getCredentials(where = {}) {
     try {
-      const user = await prismaClient.user.findUnique({
-        where: {email},
+      const user = await prismaClient.user.findFirst({
+        where,
         select: {password: true, token: true},
       });
 

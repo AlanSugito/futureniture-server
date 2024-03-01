@@ -1,5 +1,8 @@
 import {oauthUrl, logger} from '../apps/index.js';
 import {AuthService} from '../services/index.js';
+import {APIError} from '../utils/Error.js';
+import signUpSchema from '../validations/signUpSchema.js';
+import validate from '../validations/validate.js';
 
 const service = new AuthService();
 
@@ -36,6 +39,35 @@ class AuthController {
         },
       });
       logger.info(Formatter.formatRequestLog(req, res, message));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async signUp(req, res, next) {
+    try {
+      const {data} = req.body;
+      const validatedData = validate(data, signUpSchema);
+
+      await service.register(validatedData);
+
+      res.status(201).json({message: 'Successfully sign up!'});
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAccessToken(req, res, next) {
+    try {
+      if (!req.cookies) throw new APIError(403, 'No token provided!');
+
+      const {rft} = req.cookies;
+
+      const accessToken = await service.getAccessToken(rft);
+
+      res
+        .status(200)
+        .json({message: 'Successfully generate token', data: {accessToken}});
     } catch (error) {
       next(error);
     }

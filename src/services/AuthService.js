@@ -7,6 +7,8 @@ import configs from '../configs/index.js';
 class AuthService {
   constructor() {
     this.repository = new UserRepository();
+    this.accessTokenTTL = '900s';
+    this.rfTokenTTL = '30d';
   }
 
   async register(data) {
@@ -23,11 +25,13 @@ class AuthService {
       if (!(await this.repository.isUserExist(email)))
         throw new NotFoundError('User not found!');
 
-      const user = await this.repository.getCredentials(email);
+      const user = await this.repository.getCredentials({email});
       if (!(await Cryptographer.compare(password, user.password)))
         throw new APIError(400, 'Password is not valid');
 
       const {rfToken, accessToken} = this.createTokens();
+
+      await this.repository.updateProfile(email, {token: rfToken});
 
       return {rfToken, accessToken};
     } catch (error) {
@@ -39,12 +43,12 @@ class AuthService {
     const rfToken = Cryptographer.generateToken(
       {email},
       configs.RT_SECRET,
-      '30d'
+      this.rfTokenTTL
     );
     const accessToken = Cryptographer.generateToken(
       {email},
       configs.AT_SECRET,
-      '900s'
+      this.accessTokenTTL
     );
 
     return {rfToken, accessToken};
@@ -79,6 +83,22 @@ class AuthService {
 
       await this.repository.save(userData);
       return {rfToken, accessToken};
+    } catch (error) {
+      throw APIError.parseError(error);
+    }
+  }
+
+  async getAccessToken(rfToken) {
+    try {
+      const {token} = await this.repository.getCredentials({token: rfToken});
+
+      if (!token || rfToken !== token) throw new APIError(403, 'Forbidden');
+
+      const {email} = await Cryptographer.verifyToken(token, configs.RT_SECRET);
+
+      const {accessToken} = this.createTokens(email);
+
+      return accessToken;
     } catch (error) {
       throw APIError.parseError(error);
     }

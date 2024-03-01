@@ -1,6 +1,5 @@
 import validate from './validate.js';
-import credentialSchema from './credentialSchema.js';
-import profileSchema from './profileSchema.js';
+import signUpSchema from './signUpSchema.js';
 import userProfileSchema from './userProfileSchema.js';
 
-export {validate, credentialSchema, profileSchema, userProfileSchema};
+export {validate, signUpSchema, userProfileSchema};
