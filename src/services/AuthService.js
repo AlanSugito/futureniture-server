@@ -3,6 +3,7 @@ import {google} from 'googleapis';
 import {oauth2Client} from '../apps/index.js';
 import {APIError, Cryptographer, NotFoundError} from '../utils/index.js';
 import configs from '../configs/index.js';
+import sendEmailVerification from '../utils/sendVerificationEmail.js';
 
 class AuthService {
   constructor() {
@@ -14,6 +15,7 @@ class AuthService {
   async register(data) {
     try {
       const userId = await this.repository.save(data);
+      await sendEmailVerification(data.email);
       return userId;
     } catch (error) {
       throw APIError.parseError(error);
@@ -31,9 +33,21 @@ class AuthService {
 
       const {rfToken, accessToken} = this.createTokens();
 
-      await this.repository.updateProfile(email, {token: rfToken});
+      await this.repository.addToken(email, rfToken);
 
       return {rfToken, accessToken};
+    } catch (error) {
+      throw APIError.parseError(error);
+    }
+  }
+
+  async verifyEmail(token) {
+    try {
+      const {email} = await Cryptographer.verifyToken(
+        token,
+        configs.VERIFY_EMAIL_KEY
+      );
+      await this.repository.updateProfile(email, {verified: true});
     } catch (error) {
       throw APIError.parseError(error);
     }
@@ -77,7 +91,7 @@ class AuthService {
       };
 
       if (await this.repository.isUserExist(data.email)) {
-        await this.repository.updateProfile(data.email, {token: rfToken});
+        await this.repository.addToken(data.email, rfToken);
         return {rfToken, accessToken};
       }
 
@@ -90,7 +104,7 @@ class AuthService {
 
   async getAccessToken(rfToken) {
     try {
-      const {token} = await this.repository.getCredentials({token: rfToken});
+      const token = await this.repository.checkToken(rfToken);
 
       if (!token || rfToken !== token) throw new APIError(403, 'Forbidden');
 

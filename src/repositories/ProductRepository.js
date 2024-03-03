@@ -13,6 +13,7 @@ class ProductRepository {
           price: true,
           img_url: true,
           quality: true,
+          category: true,
         },
       });
 
@@ -26,12 +27,30 @@ class ProductRepository {
     try {
       const product = await prismaClient.product.findUnique({
         where: {id, is_active: true},
-        include: {Color: true},
+        include: {colors: true, category: true},
       });
 
       if (!product) throw new NotFoundError('Product not found');
 
       return product;
+    } catch (error) {
+      throw APIError.parseError(error);
+    }
+  }
+
+  async searchProducts(search) {
+    try {
+      const products = await prismaClient.product.findMany({
+        where: {
+          OR: [
+            {name: {contains: search}},
+            {category: {name: {contains: search}}},
+            {short_desc: {contains: search}},
+          ],
+        },
+      });
+
+      return products;
     } catch (error) {
       throw APIError.parseError(error);
     }

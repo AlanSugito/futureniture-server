@@ -20,14 +20,21 @@ model User {
   verified    Boolean    @default(false)
   profile_img String     @default("avatar.png") @db.Text
   is_active   Boolean    @default(true)
-  token       String?    @unique @db.Text
   created_at  DateTime   @default(now())
   updated_at  DateTime   @default(now())
   Favorite    Favorite[]
   cart        Cart?
-  Order       Order[]
+  order       Order[]
+  tokens      Token[]
 
   @@map("users")
+}
+
+model Token {
+  id     Int    @id @default(autoincrement())
+  token  String @unique
+  User   User?  @relation(fields: [userId], references: [id])
+  userId Int?
 }
 
 model Product {
@@ -41,14 +48,24 @@ model Product {
   is_active   Boolean    @default(true)
   created_at  DateTime   @default(now())
   updated_at  DateTime   @default(now())
-  Color       Color[]
-  Favorite    Favorite[]
+  colors      Color[]
+  favorites   Favorite[]
 
-  Order    Order?     @relation(fields: [orderId], references: [id])
-  orderId  Int?
-  CartItem CartItem[]
+  order      Order?     @relation(fields: [orderId], references: [id])
+  orderId    Int?
+  cartItem   CartItem[]
+  category   Category?  @relation(fields: [categoryId], references: [id])
+  categoryId Int?
 
   @@map("products")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[]
+
+  @@map("categories")
 }
 
 model Color {
@@ -79,7 +96,7 @@ model Cart {
   item    CartItem[]
   User    User?      @relation(fields: [user_id], references: [id])
 
-  @@map("UserCarts")
+  @@map("userCarts")
 }
 
 model CartItem {
@@ -89,6 +106,8 @@ model CartItem {
   qty        Int
   Cart       Cart?   @relation(fields: [cartId], references: [id])
   cartId     Int?
+
+  @@map("cartItems")
 }
 
 model Order {

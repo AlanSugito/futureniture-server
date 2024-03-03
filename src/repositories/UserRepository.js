@@ -55,7 +55,7 @@ class UserRepository {
     try {
       const user = await prismaClient.user.findFirst({
         where,
-        select: {password: true, token: true},
+        select: {password: true, tokens: true},
       });
 
       if (!user) throw new NotFoundError('User not found!');
@@ -87,6 +87,33 @@ class UserRepository {
         where: {email},
         data: {...data, updated_at: new Date()},
       });
+    } catch (error) {
+      throw APIError.parseError(error);
+    }
+  }
+
+  async addToken(email, token) {
+    try {
+      await prismaClient.user.update({
+        where: {email},
+        data: {
+          tokens: {create: {token}},
+        },
+      });
+    } catch (error) {
+      throw APIError.parseError(error);
+    }
+  }
+
+  async checkToken(rfToken) {
+    try {
+      const {token} = await prismaClient.token.findFirst({
+        where: {token: rfToken},
+      });
+
+      if (!token) throw new NotFoundError('Token not found');
+
+      return token;
     } catch (error) {
       throw APIError.parseError(error);
     }

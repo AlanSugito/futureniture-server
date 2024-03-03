@@ -17,6 +17,16 @@ class ProductService {
       throw APIError.parseError(error);
     }
   }
+
+  async getProductById(id) {
+    try {
+      const product = await this.repository.getById(id);
+
+      return product;
+    } catch (error) {
+      throw APIError.parseError(error);
+    }
+  }
 }
 
 export default ProductService;

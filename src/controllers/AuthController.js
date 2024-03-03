@@ -1,4 +1,4 @@
-import {oauthUrl, logger} from '../apps/index.js';
+import {oauthUrl} from '../apps/index.js';
 import {AuthService} from '../services/index.js';
 import {APIError} from '../utils/Error.js';
 import signUpSchema from '../validations/signUpSchema.js';
@@ -17,9 +17,7 @@ class AuthController {
       const {rfToken, accessToken} = await service.oauth2Login(code);
 
       res.cookie('rft', rfToken, {httpOnly: true});
-      const message = 'Successfully login';
       res.redirect(301, `http://localhost:5173/oauth?acc_token=${accessToken}`);
-      logger.info(Formatter.formatRequestLog(req, res, message));
     } catch (error) {
       next(error);
     }
@@ -38,7 +36,6 @@ class AuthController {
           accessToken,
         },
       });
-      logger.info(Formatter.formatRequestLog(req, res, message));
     } catch (error) {
       next(error);
     }
@@ -52,6 +49,20 @@ class AuthController {
       await service.register(validatedData);
 
       res.status(201).json({message: 'Successfully sign up!'});
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async verifyEmail(req, res, next) {
+    try {
+      const {token} = req.query;
+
+      if (!token) throw new APIError(400, 'No token provided');
+
+      await service.verifyEmail(token);
+
+      res.send('OK');
     } catch (error) {
       next(error);
     }

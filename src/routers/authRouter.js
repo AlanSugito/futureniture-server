@@ -11,5 +11,6 @@ router.post('/signup', authController.signUp);
 router.get('/login/google', authController.googleOAuth);
 router.get('/login/google/callback', authController.oauth2Login);
 router.get('/tokens', authController.getAccessToken);
+router.get('/verify/email', authController.verifyEmail);
 
 export default router;
