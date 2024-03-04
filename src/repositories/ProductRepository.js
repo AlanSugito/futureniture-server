@@ -55,6 +55,70 @@ class ProductRepository {
       throw APIError.parseError(error);
     }
   }
+
+  async save(data) {
+    try {
+      const result = await prismaClient.product.create({
+        data,
+        select: {id: true},
+      });
+
+      return result;
+    } catch (error) {
+      throw APIError.parseError(error);
+    }
+  }
+
+  async update(id, data) {
+    try {
+      const result = await prismaClient.product.update({
+        where: {id},
+        data,
+      });
+
+      return result;
+    } catch (error) {
+      throw APIError.parseError(error);
+    }
+  }
+
+  async removeProduct(id) {
+    try {
+      const result = await prismaClient.product.update({
+        where: {id},
+        data: {is_active: false},
+        select: {id: true},
+      });
+
+      return result;
+    } catch (error) {
+      throw APIError.parseError(error);
+    }
+  }
+
+  async updateStock(id, amount) {
+    try {
+      const result = await prismaClient.product.update({
+        where: {id},
+        data: {stock: amount},
+      });
+
+      return result;
+    } catch (error) {
+      throw APIError.parse(error);
+    }
+  }
+
+  async decreaseStock(id) {
+    try {
+      await prismaClient.product.update({
+        where: {id},
+        data: {stock: {decrement: 1}},
+      });
+    } catch (error) {
+      throw APIError.parseError(error);
+    }
+  }
 }
 
 export default ProductRepository;
