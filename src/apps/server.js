@@ -11,7 +11,7 @@ server.use(express.json());
 server.use(cookieParser());
 server.use(express.static('public'));
 
-server.get('/', (req, res) => {
+server.get('/', (_, res) => {
   res.send('Hello World');
 });
 

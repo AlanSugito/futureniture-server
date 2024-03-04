@@ -9,7 +9,7 @@ class AuthService {
   constructor() {
     this.repository = new UserRepository();
     this.accessTokenTTL = '900s';
-    this.rfTokenTTL = '30d';
+    this.rfTokenTTL = '20s';
   }
 
   async register(data) {
@@ -33,7 +33,7 @@ class AuthService {
 
       const {rfToken, accessToken} = this.createTokens();
 
-      await this.repository.addToken(email, rfToken);
+      await this.repository.addUserToken(email, rfToken);
 
       return {rfToken, accessToken};
     } catch (error) {
@@ -91,7 +91,7 @@ class AuthService {
       };
 
       if (await this.repository.isUserExist(data.email)) {
-        await this.repository.addToken(data.email, rfToken);
+        await this.repository.addUserToken(data.email, rfToken);
         return {rfToken, accessToken};
       }
 
@@ -104,7 +104,7 @@ class AuthService {
 
   async getAccessToken(rfToken) {
     try {
-      const token = await this.repository.checkToken(rfToken);
+      const token = await this.repository.checkUserToken(rfToken);
 
       if (!token || rfToken !== token) throw new APIError(403, 'Forbidden');
 
@@ -114,6 +114,10 @@ class AuthService {
 
       return accessToken;
     } catch (error) {
+      if (error.message && error.message === 'jwt expired') {
+        await this.repository.deleteUserToken(rfToken);
+      }
+
       throw APIError.parseError(error);
     }
   }

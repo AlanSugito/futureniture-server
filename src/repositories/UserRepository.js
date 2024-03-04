@@ -1,4 +1,4 @@
-import {prismaClient} from '../apps/index.js';
+import {logger, prismaClient} from '../apps/index.js';
 import {APIError, Cryptographer, NotFoundError} from '../utils/index.js';
 
 class UserRepository {
@@ -92,7 +92,7 @@ class UserRepository {
     }
   }
 
-  async addToken(email, token) {
+  async addUserToken(email, token) {
     try {
       await prismaClient.user.update({
         where: {email},
@@ -105,7 +105,7 @@ class UserRepository {
     }
   }
 
-  async checkToken(rfToken) {
+  async checkUserToken(rfToken) {
     try {
       const {token} = await prismaClient.token.findFirst({
         where: {token: rfToken},
@@ -114,6 +114,15 @@ class UserRepository {
       if (!token) throw new NotFoundError('Token not found');
 
       return token;
+    } catch (error) {
+      throw APIError.parseError(error);
+    }
+  }
+
+  async deleteUserToken(token) {
+    try {
+      await prismaClient.token.delete({where: {token}});
+      logger.info('token Deleted');
     } catch (error) {
       throw APIError.parseError(error);
     }
